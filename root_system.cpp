@@ -103,6 +103,13 @@ inline constexpr auto root_system<RANK>::root::operator*=(root_coeff const & rhs
         this->coefficients[i] *= rhs;
     return *this;
 }
+
+template<int RANK>
+inline constexpr auto root_system<RANK>::root::operator-=(root_system<RANK>::root const & rhs) -> root_system<RANK>::root &{
+    *this += (-1)*rhs;
+    return *this;
+}
+
 // template<int RANK>
 // constexpr root_system<RANK>::root operator*(root_system<RANK>::root lhs, root_coeff const & rhs){
 //     lhs *= rhs;
