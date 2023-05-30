@@ -17,7 +17,7 @@ private:
     root_coeff coefficients[RANK] = { 0 };
 public:
     inline constexpr root_coeff operator[](int const & index) const;
-    inline root_coeff operator[](char const & index) const;
+    inline           root_coeff operator[](char const & symbol) const;
 
     inline constexpr root& operator+=(root const & rhs);
     friend constexpr root  operator+ (root lhs, root const & rhs);
@@ -32,14 +32,14 @@ public:
     friend std::ostream  & operator<<(std::ostream & stream, root const & r);
 
     friend constexpr root simple(int const & index);
-    friend root simple(char const & index);
+    friend           root simple(char const & symbol);
 };
 
 inline constexpr root_coeff root::operator[](int const & index) const{
     return this->coefficients[index];
 }
-inline root_coeff root::operator[](char const & index) const{
-    return this->coefficients[SIMPLE_ROOT_LABELS.at(index)];
+inline root_coeff root::operator[](char const & symbol) const{
+    return this->coefficients[SIMPLE_ROOT_LABELS.at(symbol)];
 }
 
 inline constexpr root & root::operator+=(root const & rhs){
@@ -84,9 +84,9 @@ constexpr root simple(int const & index){
     r.coefficients[index] = 1;
     return r;
 }
-root simple(char const & index){
+root simple(char const & symbol){
     root r;
-    r.coefficients[SIMPLE_ROOT_LABELS.at(index)] = 1;
+    r.coefficients[SIMPLE_ROOT_LABELS.at(symbol)] = 1;
     return r;
 }
 
