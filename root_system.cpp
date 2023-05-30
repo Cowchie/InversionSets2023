@@ -44,12 +44,6 @@ public:
         return r.coefficients[SIMPLE_ROOT_LABELS.at(symbol)];
     }
 
-    friend std::ostream  & operator<<(std::ostream & stream, root const & r){
-        for (int i = 0; i < RANK; i++)
-            stream << (r.coefficients[i] < 0 ? '\0' : ' ') << r.coefficients[i];
-        return stream;
-    }
-
     constexpr root simple(int const & index){
         root r;
         r.coefficients[index] = 1;
@@ -65,7 +59,23 @@ public:
         lhs += rhs;
         return lhs;
     }
+    friend constexpr root operator*(root lhs, root_coeff const & rhs){
+        lhs *= rhs;
+        return lhs;
+    }
+    friend constexpr root operator*(root_coeff const & lhs, root const & rhs){
+        return rhs*lhs;
+    }
+    friend constexpr root operator-(root lhs, root const & rhs){
+        lhs -= rhs;
+        return lhs;
+}
 
+    friend std::ostream  & operator<<(std::ostream & stream, root const & r){
+        for (int i = 0; i < RANK; i++)
+            stream << (r.coefficients[i] < 0 ? '\0' : ' ') << r.coefficients[i];
+        return stream;
+    }
 };
 
 // inline constexpr root_coeff root::operator[](int const & index) const{
@@ -128,19 +138,19 @@ int main(){
     auto Delta = root_system<5>();
 
     auto r =   Delta.simple('1')
-        //    - 2*Delta.simple('2')
-        //    + 2*Delta.simple('3')
-        //    +   Delta.simple('4')
+           - 2*Delta.simple('2')
+           + 2*Delta.simple('3')
+           +   Delta.simple('4')
            +   Delta.simple('5');
 
 
     std::cout << r << std::endl;
 
     auto s =   Delta.simple('1');
-        //    + 2*Delta.simple('2')
-        //    + 2*Delta.simple('3')
-        //    +   Delta.simple('4')
-        //    +   Delta.simple('5');
+           + 2*Delta.simple('2')
+           + 2*Delta.simple('3')
+           +   Delta.simple('4')
+           +   Delta.simple('5');
 
     std::cout << s << std::endl;
 
