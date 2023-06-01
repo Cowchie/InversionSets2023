@@ -1,15 +1,16 @@
 #include <map>
+#include <bitset>
 #include <algorithm>
 
 #include <iostream>
 
-typedef int root_coeff;
+typedef short root_coeff_t;
 // #define RANK 5
 
 template<int RANK>
 class root_system{
 public:
-    std::map<char, int> SIMPLE_ROOT_LABELS{
+    std::map<char, int> root_label_map{
         {'1', 0}, 
         {'2', 1}, 
         {'3', 2}, 
@@ -21,17 +22,17 @@ private:
     struct root{
         friend root_system<RANK>;
     private:
-        root_coeff coefficients[RANK] = { 0 };
+        root_coeff_t coefficients[RANK] = { 0 };
     public:
-        // inline constexpr root_coeff operator[](int const & index) const;
-        // inline           root_coeff operator[](char const & symbol) const;
+        // inline constexpr root_coeff_t operator[](int const & index) const;
+        // inline           root_coeff_t operator[](char const & symbol) const;
 
         inline constexpr root& operator+=(root const & rhs);
         // friend constexpr root  operator+ (root lhs, root const & rhs);
 
-        inline constexpr root& operator*=(root_coeff const & rhs);
-        // friend constexpr root  operator* (root lhs, root_coeff const & rhs);
-        // friend constexpr root  operator* (root_coeff const & lhs, root const & rhs);
+        inline constexpr root& operator*=(root_coeff_t const & rhs);
+        // friend constexpr root  operator* (root lhs, root_coeff_t const & rhs);
+        // friend constexpr root  operator* (root_coeff_t const & lhs, root const & rhs);
 
         inline constexpr root& operator-=(root const & rhs);
         // friend constexpr root  operator- (root lhs, root const & rhs);
@@ -42,14 +43,15 @@ private:
 public:
     root roots[4*RANK*RANK];
 public:
-    int const root_count = 0;
+    size_t const root_count = 0;
+    root simple_indices[RANK];
 
 public:
-    inline root_coeff coeff(int const & index, root const & r) const{
+    inline root_coeff_t coeff(int const & index, root const & r) const{
         return r.coefficients[index];
     }
-    inline root_coeff coeff(char const & symbol, root const & r) const{
-        return r.coefficients[SIMPLE_ROOT_LABELS.at(symbol)];
+    inline root_coeff_t coeff(char const & symbol, root const & r) const{
+        return r.coefficients[root_label_map.at(symbol)];
     }
 
     constexpr root simple(int const & index) const{
@@ -59,10 +61,10 @@ public:
     }
     root simple(char const & symbol) const{
         root r;
-        r.coefficients[SIMPLE_ROOT_LABELS.at(symbol)] = 1;
+        r.coefficients[root_label_map.at(symbol)] = 1;
         return r;
     }
-public:
+private:
     inline root E1minusE(int const & j) const{
         root r;
         for (size_t i = 1; i < j; i++){
@@ -76,7 +78,8 @@ public:
         return E1minusE(RANK) + E1minusE(RANK-1) + simple(RANK-1) - E1minusE(j);
     }
 
-    int generate_roots(char const & type){
+private:
+    constexpr size_t generate_roots(char const & type){
         switch (type){
         case 'A':
             return generate_roots_A();
@@ -87,7 +90,7 @@ public:
         }
     }
 
-    int generate_roots_A(){
+    inline size_t generate_roots_A(){
         size_t index = 0;
         for (size_t i = 1; i <= RANK; i++){                 // 0 < i <= rank
             for (size_t j = i+1; j <= RANK+1; j++){         // i < j <= rank+1
@@ -96,13 +99,10 @@ public:
             }
         }
         // std::sort(std::begin(roots), std::begin(roots) + index);
-        // for (size_t i = 1; i <= rank; i++){
-        //     simple_inds.push_back(valid(simple(i)));
-        // }
         return index;
     }
 
-    int generate_roots_D(){
+    inline size_t generate_roots_D(){
         size_t index = 0;
         for (size_t i = 1; i <= RANK-1; i++){               // 0 < i <= rank
             for (size_t j = i+1; j <= RANK; j++){           // i < j <= rank+1
@@ -113,27 +113,30 @@ public:
             }
         }
         // std::sort(std::begin(roots), std::begin(roots) + index);
-        // for (size_t i = 1; i <= rank; i++){
-        //     simple_inds.push_back(valid(simple(i)));
-        // }
         return index;
     }
 
 public:
     root_system(char const & type) : 
         root_count(generate_roots(type)) 
-    {};
+    {
+
+
+        root_label_map.clear();
+        for (int i = 0; i < RANK; i++)
+            root_label_map['1'+i] = i;
+    };
 
 public:
     friend constexpr root operator+(root lhs, root const & rhs){
         lhs += rhs;
         return lhs;
     }
-    friend constexpr root operator*(root lhs, root_coeff const & rhs){
+    friend constexpr root operator*(root lhs, root_coeff_t const & rhs){
         lhs *= rhs;
         return lhs;
     }
-    friend constexpr root operator*(root_coeff const & lhs, root const & rhs){
+    friend constexpr root operator*(root_coeff_t const & lhs, root const & rhs){
         return rhs*lhs;
     }
     friend constexpr root operator-(root lhs, root const & rhs){
@@ -148,11 +151,11 @@ public:
     }
 };
 
-// inline constexpr root_coeff root::operator[](int const & index) const{
+// inline constexpr root_coeff_t root::operator[](int const & index) const{
 //     return this->coefficients[index];
 // }
-// inline root_coeff root::operator[](char const & symbol) const{
-//     return this->coefficients[SIMPLE_ROOT_LABELS.at(symbol)];
+// inline root_coeff_t root::operator[](char const & symbol) const{
+//     return this->coefficients[root_label_map.at(symbol)];
 // }
 
 template<int RANK>
@@ -168,7 +171,7 @@ inline constexpr auto root_system<RANK>::root::operator+=(root_system<RANK>::roo
 // }
 
 template<int RANK>
-inline constexpr auto root_system<RANK>::root::operator*=(root_coeff const & rhs) -> root_system<RANK>::root &{
+inline constexpr auto root_system<RANK>::root::operator*=(root_coeff_t const & rhs) -> root_system<RANK>::root &{
     for (int i = 0; i < RANK; i++)
         this->coefficients[i] *= rhs;
     return *this;
@@ -181,11 +184,11 @@ inline constexpr auto root_system<RANK>::root::operator-=(root_system<RANK>::roo
 }
 
 // template<int RANK>
-// constexpr root_system<RANK>::root operator*(root_system<RANK>::root lhs, root_coeff const & rhs){
+// constexpr root_system<RANK>::root operator*(root_system<RANK>::root lhs, root_coeff_t const & rhs){
 //     lhs *= rhs;
 //     return lhs;
 // }
-// constexpr root_system<RANK>::root operator*(root_coeff const & lhs, root_system<RANK>::root const & rhs){
+// constexpr root_system<RANK>::root operator*(root_coeff_t const & lhs, root_system<RANK>::root const & rhs){
 //     return rhs*lhs;
 // }
 
@@ -211,21 +214,25 @@ inline constexpr auto root_system<RANK>::root::operator-=(root_system<RANK>::roo
 
 int main(){
     std::cout << "Let's try again..." << std::endl;
+    std::cout << std::endl;
 
-    auto Delta = root_system<5>('D');
+    root_system<7> const Delta('D');
+
+    for (auto [k, v]: Delta.root_label_map){
+        std::cout << "char: " << k << ", int: " << v << std::endl;
+    }
+    std::cout << std::endl;
+
+    // auto b = std::bitset<Delta.root_count>();
 
     auto r =   Delta.simple('1')
            + 2*Delta.simple('2')
            + 2*Delta.simple('3')
-           +   Delta.simple('4')
-           +   Delta.simple('5');
+           + 2*Delta.simple('4')
+           + 2*Delta.simple('5')
+           +   Delta.simple('6')
+           +   Delta.simple('7');
     std::cout << r << std::endl;
-    std::cout << std::endl;
-
-    std::cout << Delta.E1plusE(2) << std::endl;
-    std::cout << Delta.E1plusE(3) << std::endl;
-    std::cout << Delta.E1plusE(4) << std::endl;
-    std::cout << Delta.E1plusE(5) << std::endl;
     std::cout << std::endl;
 
 
