@@ -159,7 +159,7 @@ public:
     root_system(char const & type) : 
         root_count(generate_roots(type)) 
     {
-        std::sort(std::begin(roots), std::end(roots), root_compare);
+        // std::sort(std::begin(roots), std::end(roots), root_compare);
 
         root_label_map.clear();
         for (int i = 0; i < RANK; i++)
@@ -244,6 +244,18 @@ int main(){
     std::cout << r << std::endl;
     std::cout << std::endl;
 
+    auto s =   Delta.simple('1')
+           + 2*Delta.simple('2')
+           + 2*Delta.simple('3')
+           +   Delta.simple('4')
+           + 2*Delta.simple('5')
+           +   Delta.simple('6')
+           +   Delta.simple('7');
+    std::cout << s << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Is r != s ? " << (r != s) << std::endl;
+    std::cout << std::endl;
 
     std::cout << Delta.root_count << std::endl;
     for (size_t i = 0; i < Delta.root_count; i++){
