@@ -39,6 +39,12 @@ private:
 
         // friend constexpr root simple(int const & index);
         // friend           root simple(char const & symbol);
+
+        // friend constexpr root_coeff_t hgt(root const & r);
+
+        // friend constexpr bool operator<(root const & lhs, root const & rhs);
+
+        inline constexpr bool operator!=(root const & rhs);
     };
 public:
     root roots[4*RANK*RANK];
@@ -63,6 +69,24 @@ public:
         root r;
         r.coefficients[root_label_map.at(symbol)] = 1;
         return r;
+    }
+    
+    constexpr root_coeff_t hgt(root const & r){
+        root_coeff_t sum = 0;
+        for (size_t i = 0; i < RANK; i++){
+            sum += r.coefficients[i];
+        }
+        return sum;
+    }
+    constexpr bool root_compare(root const & lhs, root const & rhs){
+        if(hgt(lhs) != hgt(rhs))
+            return hgt(lhs) < hgt(rhs);
+
+        for (size_t i = 0; i < RANK; i++){
+            if (lhs.coefficients[i] >= rhs.coefficients[i])
+                return false;
+        }
+        return true;
     }
 private:
     inline root E1minusE(int const & j) const{
@@ -115,12 +139,27 @@ private:
         // std::sort(std::begin(roots), std::begin(roots) + index);
         return index;
     }
+public:
+
+    int valid(root const a){
+        auto iter = std::lower_bound(
+                       std::begin(roots), 
+                       std::end(roots), 
+                       a,
+                       root_compare
+                    );
+        if (iter >= std::end(roots))
+            return -1;
+        if (*iter != a)
+            return -1;
+        return iter - std::begin(roots);
+    }
 
 public:
     root_system(char const & type) : 
         root_count(generate_roots(type)) 
     {
-
+        std::sort(std::begin(roots), std::end(roots), root_compare);
 
         root_label_map.clear();
         for (int i = 0; i < RANK; i++)
@@ -142,7 +181,8 @@ public:
     friend constexpr root operator-(root lhs, root const & rhs){
         lhs -= rhs;
         return lhs;
-}
+    }
+
 
     friend std::ostream  & operator<<(std::ostream & stream, root const & r){
         for (int i = 0; i < RANK; i++)
@@ -151,12 +191,6 @@ public:
     }
 };
 
-// inline constexpr root_coeff_t root::operator[](int const & index) const{
-//     return this->coefficients[index];
-// }
-// inline root_coeff_t root::operator[](char const & symbol) const{
-//     return this->coefficients[root_label_map.at(symbol)];
-// }
 
 template<int RANK>
 inline constexpr auto root_system<RANK>::root::operator+=(root_system<RANK>::root const & rhs) -> root_system<RANK>::root &{
@@ -164,11 +198,6 @@ inline constexpr auto root_system<RANK>::root::operator+=(root_system<RANK>::roo
         this->coefficients[i] += rhs.coefficients[i];
     return *this;
 }
-// template<int RANK>
-// constexpr root_system<RANK>::root::operator+(root_system<RANK>::root lhs, root_system<RANK>::root const & rhs){
-//     lhs += rhs;
-//     return lhs;
-// }
 
 template<int RANK>
 inline constexpr auto root_system<RANK>::root::operator*=(root_coeff_t const & rhs) -> root_system<RANK>::root &{
@@ -183,34 +212,14 @@ inline constexpr auto root_system<RANK>::root::operator-=(root_system<RANK>::roo
     return *this;
 }
 
-// template<int RANK>
-// constexpr root_system<RANK>::root operator*(root_system<RANK>::root lhs, root_coeff_t const & rhs){
-//     lhs *= rhs;
-//     return lhs;
-// }
-// constexpr root_system<RANK>::root operator*(root_coeff_t const & lhs, root_system<RANK>::root const & rhs){
-//     return rhs*lhs;
-// }
-
-// template<int RANK>
-// inline constexpr root_system<RANK>::root & root_system<RANK>::root::operator-=(root_system<RANK>::root const & rhs){
-//     *this += (-1)*rhs;
-//     return *this;
-// }
-// constexpr root_system<RANK>::root operator-(root_system<RANK>::root lhs, root_system<RANK>::root const & rhs){
-//     lhs -= rhs;
-//     return lhs;
-// }
-
-// template<int RANK>
-// std::ostream & operator<<(
-//                         std::ostream & stream, 
-//                         typename root_system<RANK>::root const & r
-// ){
-//     for (int i = 0; i < RANK; i++)
-//         stream << (r[i] < 0 ? '\0' : ' ') << r[i];
-//     return stream;
-// }
+template<int RANK>
+inline constexpr auto root_system<RANK>::root::operator!=(root_system<RANK>::root const & rhs) -> bool{
+    for (size_t i = 0; i < RANK; i++){
+        if (this->coefficients[i] != rhs.coefficients[i])
+            return false;
+    }
+    return true;
+}
 
 int main(){
     std::cout << "Let's try again..." << std::endl;
@@ -240,6 +249,9 @@ int main(){
     for (size_t i = 0; i < Delta.root_count; i++){
         std::cout << Delta.roots[i] << std::endl;
     }
+    std::cout << std::endl;
+
+    // std::cout << "Is r a root? " << Delta.valid(r) << std::endl;
     
 
     return 0;
