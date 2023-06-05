@@ -44,7 +44,7 @@ private:
 
         // friend constexpr bool operator<(root const & lhs, root const & rhs);
 
-        inline constexpr bool operator!=(root const & rhs);
+        // inline constexpr bool operator!=(root const & rhs);
     };
 public:
     root roots[4*RANK*RANK];
@@ -71,23 +71,24 @@ public:
         return r;
     }
     
-    constexpr root_coeff_t hgt(root const & r){
+    static constexpr root_coeff_t hgt(root const & r){
         root_coeff_t sum = 0;
         for (size_t i = 0; i < RANK; i++){
             sum += r.coefficients[i];
         }
         return sum;
     }
-    constexpr bool root_compare(root const & lhs, root const & rhs){
-        if(hgt(lhs) != hgt(rhs))
-            return hgt(lhs) < hgt(rhs);
+    // constexpr bool root_compare(root const & lhs, root const & rhs){
+    //     if(hgt(lhs) != hgt(rhs))
+    //         return hgt(lhs) < hgt(rhs);
 
-        for (size_t i = 0; i < RANK; i++){
-            if (lhs.coefficients[i] >= rhs.coefficients[i])
-                return false;
-        }
-        return true;
-    }
+    //     for (size_t i = 0; i < RANK; i++){
+    //         if (lhs.coefficients[i] >= rhs.coefficients[i])
+    //             return false;
+    //     }
+    //     return true;
+    // }
+
 private:
     inline root E1minusE(int const & j) const{
         root r;
@@ -145,8 +146,7 @@ public:
         auto iter = std::lower_bound(
                        std::begin(roots), 
                        std::end(roots), 
-                       a,
-                       root_compare
+                       a
                     );
         if (iter >= std::end(roots))
             return -1;
@@ -159,7 +159,7 @@ public:
     root_system(char const & type) : 
         root_count(generate_roots(type)) 
     {
-        // std::sort(std::begin(roots), std::end(roots), root_compare);
+        std::sort(std::begin(roots), std::begin(roots)+root_count);
 
         root_label_map.clear();
         for (int i = 0; i < RANK; i++)
@@ -183,6 +183,35 @@ public:
         return lhs;
     }
 
+    friend constexpr bool operator==(root const & lhs, root const & rhs){
+        for (size_t i = 0; i < RANK; i++){
+            if (lhs.coefficients[i] != rhs.coefficients[i])
+                return false;
+        }
+        return true;
+    }
+    friend constexpr bool operator!=(root const & lhs, root const & rhs){
+        return !(lhs == rhs);
+    }
+    friend constexpr bool operator< (root const & lhs, root const & rhs){
+        if(hgt(lhs) != hgt(rhs))
+            return hgt(lhs) < hgt(rhs);
+
+        for (size_t i = 0; i < RANK; i++){
+            if (lhs.coefficients[i] >= rhs.coefficients[i])
+                return false;
+        }
+        return true;
+    }
+    friend constexpr bool operator> (root const & lhs, root const & rhs){
+        return rhs < lhs;
+    }
+    friend constexpr bool operator>=(root const & lhs, root const & rhs){
+        return !(lhs < rhs);
+    }
+    friend constexpr bool operator<=(root const & lhs, root const & rhs){
+        return rhs >= lhs;
+    }
 
     friend std::ostream  & operator<<(std::ostream & stream, root const & r){
         for (int i = 0; i < RANK; i++)
@@ -210,15 +239,6 @@ template<int RANK>
 inline constexpr auto root_system<RANK>::root::operator-=(root_system<RANK>::root const & rhs) -> root_system<RANK>::root &{
     *this += (-1)*rhs;
     return *this;
-}
-
-template<int RANK>
-inline constexpr auto root_system<RANK>::root::operator!=(root_system<RANK>::root const & rhs) -> bool{
-    for (size_t i = 0; i < RANK; i++){
-        if (this->coefficients[i] != rhs.coefficients[i])
-            return false;
-    }
-    return true;
 }
 
 int main(){
@@ -254,7 +274,8 @@ int main(){
     std::cout << s << std::endl;
     std::cout << std::endl;
 
-    std::cout << "Is r != s ? " << (r != s) << std::endl;
+    std::cout << "Is r == r ? " << (r == r) << std::endl;
+    std::cout << "Is r == s ? " << (r == s) << std::endl;
     std::cout << std::endl;
 
     std::cout << Delta.root_count << std::endl;
